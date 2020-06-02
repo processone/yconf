@@ -353,6 +353,16 @@ directory(write) ->
 	    end
     end.
 
+-ifdef(USE_OLD_HTTP_URI).
+uri_parse(URL) ->
+    {ok, {Scheme, _UserInfo, Host, Port, Path, _Query}} = http_uri:parse(URL),
+    {ok, Scheme, Host, Port, Path}.
+-else.
+uri_parse(URL) ->
+    #{scheme:=Scheme,host:=Host,port:=Port,path:=Path} = uri_string:parse(URL),
+    {ok, Scheme, Host, Port, Path}.
+-endif.
+
 -spec url() -> validator(binary()).
 url() ->
     url([http, https]).
@@ -361,18 +371,18 @@ url() ->
 url(Schemes) ->
     fun(Val) ->
 	    URL = to_binary(Val),
-	    case http_uri:parse(to_string(URL)) of
-		{ok, {_, _, Host, _, _, _}} when Host == ""; Host == <<"">> ->
+	    case uri_parse(to_string(URL)) of
+		{ok, _, Host, _, _} when Host == ""; Host == <<"">> ->
 		    fail({bad_url, empty_host, URL});
-		{ok, {_, _, _, Port, _, _}} when Port =< 0 orelse Port >= 65536 ->
+		{ok, _, _, Port, _} when Port =< 0 orelse Port >= 65536 ->
 		    fail({bad_url, bad_port, URL});
-		{ok, {Scheme, _, _, _, _, _}} when Schemes /= [] ->
+		{ok, Scheme, _, _, _} when Schemes /= [] ->
 		    case lists:member(Scheme, Schemes) of
 			true -> URL;
 			false ->
 			    fail({bad_url, {unsupported_scheme, Scheme}, URL})
 		    end;
-		{ok, _} ->
+		{ok, _, _, _, _} ->
 		    URL;
 		{error, Why} ->
 		    fail({bad_url, Why, URL})
