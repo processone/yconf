@@ -354,18 +354,21 @@ directory(write) ->
     end.
 
 -ifdef(USE_OLD_HTTP_URI).
+-spec url() -> validator(binary()).
+url() ->
+    url([http, https]).
 uri_parse(URL) ->
     {ok, {Scheme, _UserInfo, Host, Port, Path, _Query}} = http_uri:parse(URL),
     {ok, Scheme, Host, Port, Path}.
 -else.
-uri_parse(URL) ->
-    #{scheme:=Scheme,host:=Host,port:=Port,path:=Path} = uri_string:parse(URL),
-    {ok, Scheme, Host, Port, Path}.
--endif.
-
 -spec url() -> validator(binary()).
 url() ->
-    url([http, https]).
+    url(["http", "https"]).
+uri_parse(URL) ->
+    URL2 = re:replace(URL, "@[A-Z]+@", "SOMEMACRO"),
+    #{scheme:=Scheme,host:=Host,port:=Port,path:=Path} = uri_string:parse(URL2),
+    {ok, Scheme, Host, Port, Path}.
+-endif.
 
 -spec url([atom()]) -> validator(binary()).
 url(Schemes) ->
