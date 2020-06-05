@@ -363,7 +363,7 @@ uri_parse(URL) when is_binary(URL) ->
 uri_parse(URL) ->
     case http_uri:parse(URL) of
 	{ok, {Scheme, _UserInfo, Host, Port, Path, _Query}} ->
-	    {ok, Scheme, Host, Port};
+	    {ok, Scheme, to_binary(Host), Port};
 	{error, Reason} ->
 	    {error, Reason}
     end.
@@ -375,7 +375,7 @@ uri_parse(URL) ->
 	    Scheme = maps:get(scheme, URIMap, <<>>),
 	    Host = maps:get(host, URIMap, <<>>),
 	    Port = maps:get(port, URIMap, undefined),
-	    {ok, to_atom(Scheme), Host, Port};
+	    {ok, to_atom(Scheme), to_binary(Host), Port};
 	{error, Reason, _Info} ->
 	    {error, Reason}
     end.
@@ -386,7 +386,7 @@ url(Schemes) ->
     fun(Val) ->
 	    URL = to_binary(Val),
 	    case uri_parse(URL) of
-		{ok, _, Host, _} when Host == ""; Host == <<"">> ->
+		{ok, _, Host, _} when Host == <<"">> ->
 		    fail({bad_url, empty_host, URL});
 		{ok, _, _, Port} when Port /= undefined,
 				      Port =< 0 orelse Port >= 65536 ->
