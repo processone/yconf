@@ -368,7 +368,11 @@ url() ->
     url([<<"http">>, <<"https">>]).
 uri_parse(URL) ->
     URL2 = re:replace(URL, <<"@[A-Z]+@">>, <<"SOMEMACRO">>, [{return, binary}]),
-    #{scheme:=Scheme,host:=Host,port:=Port,path:=Path} = uri_string:parse(URL2),
+    URIMap = uri_string:parse(URL2),
+    Scheme = maps:get(scheme, URIMap, <<>>),
+    Host = maps:get(host, URIMap, <<>>),
+    Port = maps:get(port, URIMap, undefined),
+    Path = maps:get(path, URIMap, <<>>),
     {ok, Scheme, Host, Port, Path}.
 -endif.
 
@@ -379,7 +383,8 @@ url(Schemes) ->
 	    case uri_parse(URL) of
 		{ok, _, Host, _, _} when Host == ""; Host == <<"">> ->
 		    fail({bad_url, empty_host, URL});
-		{ok, _, _, Port, _} when Port =< 0 orelse Port >= 65536 ->
+		{ok, _, _, Port, _} when Port /= undefined,
+					 Port =< 0 orelse Port >= 65536 ->
 		    fail({bad_url, bad_port, URL});
 		{ok, Scheme, _, _, _} when Schemes /= [] ->
 		    case lists:member(Scheme, Schemes) of
