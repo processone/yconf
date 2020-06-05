@@ -362,7 +362,7 @@ url(Schemes) ->
     fun(Val) ->
 	    URL = to_binary(Val),
 	    case parse_uri(URL) of
-		{ok, _, Host, _} when Host == <<"">> ->
+		{ok, _, Host, _} when Host == ""; Host == <<"">> ->
 		    fail({bad_url, empty_host, URL});
 		{ok, _, _, Port} when Port /= undefined,
 				      Port =< 0 orelse Port >= 65536 ->
@@ -1155,7 +1155,7 @@ parse_uri(URL) ->
 	    Port = if is_integer(Port0) -> Port0;
 		      true -> undefined
 		   end,
-	    {ok, Scheme, to_binary(Host), Port};
+	    {ok, Scheme, Host, Port};
 	{error, Reason} ->
 	    {error, Reason}
     end.
@@ -1167,7 +1167,7 @@ parse_uri(URL0) ->
 	    Scheme = maps:get(scheme, URIMap, <<>>),
 	    Host = maps:get(host, URIMap, <<>>),
 	    Port = maps:get(port, URIMap, undefined),
-	    {ok, to_atom(Scheme), to_binary(Host), Port};
+	    {ok, to_atom(Scheme), Host, Port};
 	{error, Reason, _Info} ->
 	    {error, Reason}
     end.
