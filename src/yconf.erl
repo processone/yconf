@@ -357,15 +357,17 @@ directory(write) ->
 -spec url() -> validator(binary()).
 url() ->
     url([http, https]).
+uri_parse(URL) when is_binary(URL) ->
+    uri_parse(to_string(URL));
 uri_parse(URL) ->
     {ok, {Scheme, _UserInfo, Host, Port, Path, _Query}} = http_uri:parse(URL),
     {ok, Scheme, Host, Port, Path}.
 -else.
 -spec url() -> validator(binary()).
 url() ->
-    url(["http", "https"]).
+    url([<<"http">>, <<"https">>]).
 uri_parse(URL) ->
-    URL2 = re:replace(URL, "@[A-Z]+@", "SOMEMACRO"),
+    URL2 = re:replace(URL, <<"@[A-Z]+@">>, <<"SOMEMACRO">>, [{return, binary}]),
     #{scheme:=Scheme,host:=Host,port:=Port,path:=Path} = uri_string:parse(URL2),
     {ok, Scheme, Host, Port, Path}.
 -endif.
@@ -374,7 +376,7 @@ uri_parse(URL) ->
 url(Schemes) ->
     fun(Val) ->
 	    URL = to_binary(Val),
-	    case uri_parse(to_string(URL)) of
+	    case uri_parse(URL) of
 		{ok, _, Host, _, _} when Host == ""; Host == <<"">> ->
 		    fail({bad_url, empty_host, URL});
 		{ok, _, _, Port, _} when Port =< 0 orelse Port >= 65536 ->
