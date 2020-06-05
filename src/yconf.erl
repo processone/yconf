@@ -353,39 +353,27 @@ directory(write) ->
 	    end
     end.
 
--ifdef(USE_OLD_HTTP_URI).
 -spec url() -> validator(binary()).
 url() ->
     url([http, https]).
-uri_parse(URL) ->
-    {ok, {Scheme, _UserInfo, Host, Port, Path, _Query}} = http_uri:parse(URL),
-    {ok, Scheme, Host, Port, Path}.
--else.
--spec url() -> validator(binary()).
-url() ->
-    url(["http", "https"]).
-uri_parse(URL) ->
-    URL2 = re:replace(URL, "@[A-Z]+@", "SOMEMACRO"),
-    #{scheme:=Scheme,host:=Host,port:=Port,path:=Path} = uri_string:parse(URL2),
-    {ok, Scheme, Host, Port, Path}.
--endif.
 
 -spec url([atom()]) -> validator(binary()).
 url(Schemes) ->
     fun(Val) ->
 	    URL = to_binary(Val),
-	    case uri_parse(to_string(URL)) of
-		{ok, _, Host, _, _} when Host == ""; Host == <<"">> ->
+	    case parse_uri(URL) of
+		{ok, _, Host, _} when Host == <<"">> ->
 		    fail({bad_url, empty_host, URL});
-		{ok, _, _, Port, _} when Port =< 0 orelse Port >= 65536 ->
+		{ok, _, _, Port} when Port /= undefined,
+				      Port =< 0 orelse Port >= 65536 ->
 		    fail({bad_url, bad_port, URL});
-		{ok, Scheme, _, _, _} when Schemes /= [] ->
+		{ok, Scheme, _, _} when Schemes /= [] ->
 		    case lists:member(Scheme, Schemes) of
 			true -> URL;
 			false ->
 			    fail({bad_url, {unsupported_scheme, Scheme}, URL})
 		    end;
-		{ok, _, _, _, _} ->
+		{ok, _, _, _} ->
 		    URL;
 		{error, Why} ->
 		    fail({bad_url, Why, URL})
@@ -1155,6 +1143,35 @@ parse_ip_netmask(S) ->
 	_ ->
 	    error
     end.
+
+-spec parse_uri(term()) -> {ok, atom(), binary(), integer() | undefined} |
+			   {error, term()}.
+-ifdef(USE_OLD_HTTP_URI).
+parse_uri(URL) when is_binary(URL) ->
+    parse_uri(to_string(URL)); % OTP =< 19's http_uri:parse/1 expects strings.
+parse_uri(URL) ->
+    case http_uri:parse(URL) of
+	{ok, {Scheme, _UserInfo, Host, Port0, Path, _Query}} ->
+	    Port = if is_integer(Port0) -> Port0;
+		      true -> undefined
+		   end,
+	    {ok, Scheme, to_binary(Host), Port};
+	{error, Reason} ->
+	    {error, Reason}
+    end.
+-else.
+parse_uri(URL0) ->
+    URL = re:replace(URL0, <<"@[A-Z]+@">>, <<"MACRO">>, [{return, binary}]),
+    case uri_string:parse(URL) of
+	URIMap when is_map(URIMap) ->
+	    Scheme = maps:get(scheme, URIMap, <<>>),
+	    Host = maps:get(host, URIMap, <<>>),
+	    Port = maps:get(port, URIMap, undefined),
+	    {ok, to_atom(Scheme), to_binary(Host), Port};
+	{error, Reason, _Info} ->
+	    {error, Reason}
+    end.
+-endif.
 
 -spec fail(error_reason()) -> no_return().
 fail(Reason) ->
