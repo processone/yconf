@@ -353,10 +353,11 @@ directory(write) ->
 	    end
     end.
 
--ifdef(USE_OLD_HTTP_URI).
 -spec url() -> validator(binary()).
 url() ->
     url([http, https]).
+
+-ifdef(USE_OLD_HTTP_URI).
 uri_parse(URL) when is_binary(URL) ->
     uri_parse(to_string(URL));
 uri_parse(URL) ->
@@ -367,9 +368,6 @@ uri_parse(URL) ->
 	    {error, Reason}
     end.
 -else.
--spec url() -> validator(binary()).
-url() ->
-    url([<<"http">>, <<"https">>]).
 uri_parse(URL) ->
     URL2 = re:replace(URL, <<"@[A-Z]+@">>, <<"SOMEMACRO">>, [{return, binary}]),
     case uri_string:parse(URL2) of
@@ -377,7 +375,7 @@ uri_parse(URL) ->
 	    Scheme = maps:get(scheme, URIMap, <<>>),
 	    Host = maps:get(host, URIMap, <<>>),
 	    Port = maps:get(port, URIMap, undefined),
-	    {ok, Scheme, Host, Port};
+	    {ok, to_atom(Scheme), Host, Port};
 	{error, Reason, _Info} ->
 	    {error, Reason}
     end.
