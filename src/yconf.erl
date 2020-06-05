@@ -360,20 +360,28 @@ url() ->
 uri_parse(URL) when is_binary(URL) ->
     uri_parse(to_string(URL));
 uri_parse(URL) ->
-    {ok, {Scheme, _UserInfo, Host, Port, Path, _Query}} = http_uri:parse(URL),
-    {ok, Scheme, Host, Port, Path}.
+    case http_uri:parse(URL) of
+	{ok, {Scheme, _UserInfo, Host, Port, Path, _Query}} ->
+	    {ok, Scheme, Host, Port, Path};
+	{error, Reason} ->
+	    {error, Reason}
+    end.
 -else.
 -spec url() -> validator(binary()).
 url() ->
     url([<<"http">>, <<"https">>]).
 uri_parse(URL) ->
     URL2 = re:replace(URL, <<"@[A-Z]+@">>, <<"SOMEMACRO">>, [{return, binary}]),
-    URIMap = uri_string:parse(URL2),
-    Scheme = maps:get(scheme, URIMap, <<>>),
-    Host = maps:get(host, URIMap, <<>>),
-    Port = maps:get(port, URIMap, undefined),
-    Path = maps:get(path, URIMap, <<>>),
-    {ok, Scheme, Host, Port, Path}.
+    case uri_string:parse(URL2) of
+	URIMap when is_map(URIMap) ->
+	    Scheme = maps:get(scheme, URIMap, <<>>),
+	    Host = maps:get(host, URIMap, <<>>),
+	    Port = maps:get(port, URIMap, undefined),
+	    Path = maps:get(path, URIMap, <<>>),
+	    {ok, Scheme, Host, Port, Path};
+	{error, Reason, _Info} ->
+	    {error, Reason}
+    end.
 -endif.
 
 -spec url([atom()]) -> validator(binary()).
