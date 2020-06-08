@@ -1123,7 +1123,7 @@ stop_test() ->
 %%%===================================================================
 test_dir() ->
     {ok, Cwd} = file:get_cwd(),
-    filename:join(filename:dirname(Cwd), "test").
+    filename:join(Cwd, "test").
 
 file(Data) ->
     file("test.yml", Data).
