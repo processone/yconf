@@ -2,16 +2,15 @@ language: erlang
 
 otp_release:
   - 19.3
-  - 22.3
-  - 23.0
+  - 22.1
 
 install:
   - sudo apt-get -qq install libyaml-dev
 
 script:
-  - rebar3 get-deps compile
-  - rebar3 xref
-  - rebar3 eunit
+  - make
+  - make xref
+  - make test
 
 notifications:
   email: false
