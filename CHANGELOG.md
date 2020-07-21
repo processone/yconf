@@ -1,3 +1,11 @@
+# Version 1.0.6
+
+* Updating fast_yaml to version 1.0.26.
+* Create README.md
+* Remove test cases useless since 3e042d17
+* Fix Travis setup and test up to Erlang/OTP 22.3
+* Many improvements in uri_parse/1
+
 # Version 1.0.5
 
 * Updating fast_yaml to version 1.0.25.
