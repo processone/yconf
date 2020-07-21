@@ -1,6 +1,7 @@
 # Version 1.0.6
 
 * Updating fast_yaml to version 1.0.26.
+* Updating fast_yaml to version 1.0.26.
 * Create README.md
 * Remove test cases useless since 3e042d17
 * Fix Travis setup and test up to Erlang/OTP 22.3
