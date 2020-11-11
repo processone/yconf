@@ -1,3 +1,7 @@
+# Version 1.0.8
+
+* Exclude old OTP releases from Travis
+
 # Version 1.0.7
 
 * Updating fast_yaml to version 1.0.27.
