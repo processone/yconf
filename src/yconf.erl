@@ -20,7 +20,7 @@
 %% API
 -export([start/0, stop/0]).
 -export([parse/2, parse/3, validate/2, fail/2, replace_macros/1]).
--export([format_error/1, format_error/2, format_ctx/1]).
+-export([format_error/1, format_error/2, format_ctx/1, include_files/3]).
 %% Simple types
 -export([pos_int/0, pos_int/1, non_neg_int/0, non_neg_int/1]).
 -export([int/0, int/2, number/1, octal/0]).
