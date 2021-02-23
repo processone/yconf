@@ -1151,7 +1151,7 @@ parse_uri(URL) when is_binary(URL) ->
     parse_uri(to_string(URL)); % OTP =< 19's http_uri:parse/1 expects strings.
 parse_uri(URL) ->
     case http_uri:parse(URL) of
-	{ok, {Scheme, _UserInfo, Host, Port0, Path, _Query}} ->
+	{ok, {Scheme, _UserInfo, Host, Port0, _Path, _Query}} ->
 	    Port = if is_integer(Port0) -> Port0;
 		      true -> undefined
 		   end,
