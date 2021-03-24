@@ -1,3 +1,10 @@
+# Version 1.0.11
+
+* Updating fast_yaml to version 1.0.31.
+* Fix unused variable warning
+* Update copyright year to 2021
+* Export include_files/3 to fix several Dialyzer warnings
+
 # Version 1.0.10
 
 * Updating fast_yaml to version 1.0.30.
