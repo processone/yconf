@@ -1103,7 +1103,11 @@ stop_test() ->
 %%%===================================================================
 test_dir() ->
     {ok, Cwd} = file:get_cwd(),
-    filename:join(filename:dirname(Cwd), "test").
+    CwdClean = case lists:reverse(filename:split(Cwd)) of
+                   [".eunit" | Tail] -> Tail; % when using rebar2
+                   Tail -> Tail % when using rebar3
+    end,
+    filename:join(lists:reverse(["test" | CwdClean])).
 
 file(Data) ->
     file("test.yml", Data).
