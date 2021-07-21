@@ -1,3 +1,7 @@
+# Version 1.0.12
+
+* Switch from using Travis to Github Actions as CI
+
 # Version 1.0.11
 
 * Updating fast_yaml to version 1.0.31.
