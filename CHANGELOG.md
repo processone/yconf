@@ -1,3 +1,7 @@
+# Version 1.0.14
+
+* Updating fast_yaml to version 1.0.34.
+
 # Version 1.0.13
 
 * Updating fast_yaml to version 1.0.33.
