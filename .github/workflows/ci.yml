@@ -18,6 +18,7 @@ jobs:
     - run: rebar3 compile
     - run: rebar3 xref
     - run: rebar3 dialyzer
+      if: matrix.otp != 26 # Some re types are not exported in OTP 26
     - run: rebar3 eunit -v
     - name: Send to Coveralls
       if: matrix.otp == 26

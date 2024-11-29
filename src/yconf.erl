@@ -243,7 +243,7 @@ binary() ->
 binary(Regexp) ->
     binary(Regexp, []).
 
--spec binary(iodata(), [re:compile_option()]) -> validator(binary()).
+-spec binary(iodata(), re:compile_options()) -> validator(binary()).
 binary(Regexp, Opts) when is_list(Regexp) orelse is_binary(Regexp) ->
     fun(Val) ->
 	    Bin = to_binary(Val),
@@ -265,7 +265,7 @@ string() ->
 string(Regexp) ->
     string(Regexp, []).
 
--spec string(iodata(), [re:compile_option()]) -> validator(string()).
+-spec string(iodata(), re:compile_options()) -> validator(string()).
 string(Regexp, Opts) when is_list(Regexp) orelse is_binary(Regexp) ->
     fun(Val) ->
 	    Str = to_string(Val),
@@ -451,7 +451,7 @@ timeout(Unit, Inf) ->
 re() ->
     re([]).
 
--spec re([re:compile_option()]) -> validator(re:mp()).
+-spec re(re:compile_options()) -> validator(re:mp()).
 re(Opts) ->
     fun(Val) ->
 	    Bin = to_binary(Val),
@@ -465,7 +465,7 @@ re(Opts) ->
 glob() ->
     glob([]).
 
--spec glob([re:compile_option()]) -> validator(re:mp()).
+-spec glob(re:compile_options()) -> validator(re:mp()).
 glob(Opts) ->
     fun(Val) ->
 	    S = to_string(Val),
