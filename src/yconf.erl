@@ -108,11 +108,11 @@ parse(Path0, Validators, Opts) ->
     Path = unicode:characters_to_binary(Path0),
     {Opts1, Opts2} = proplists:split(
 		       proplists:compact(Opts),
-		       [replace_macros, include_files, plain_as_atom]),
+		       [replace_macros, include_files, plain_as_atom, additional_macros]),
     Opts3 = lists:flatten(Opts1),
     try
 	Y1 = read_yaml(prep_path(Path), Opts3, []),
-	Y2 = replace_macros(Y1, Opts3),
+	Y2 = replace_macros(define_additional_macros(Y1, Opts3), Opts3),
 	Validators1 = maps:merge(Validators, validators(Opts3)),
 	{ok, (options(Validators1, Opts2))(Y2)}
     catch _:{?MODULE, Why, Ctx} ->
@@ -886,6 +886,19 @@ replace_macros(Y, Opts) ->
 	    V(Y);
 	false ->
 	    Y
+    end.
+
+define_additional_macros(Yi, Opts) ->
+    CurrentMacros = lists:flatten(proplists:get_all_values(define_macro, Yi)),
+    AdditionalMacros = proplists:get_value(additional_macros, Opts, []),
+    NewMacros = lists:foldl(fun({Key, Value}, CMs) ->
+                                     lists:keystore(Key, 1, CMs, {Key, Value})
+                             end,
+                             CurrentMacros,
+                             AdditionalMacros),
+    case NewMacros of
+        [] -> proplists:delete(define_macro, Yi);
+        _ -> [{define_macro, NewMacros} | proplists:delete(define_macro, Yi)]
     end.
 
 -spec check_duplicated_macros([macro()]) -> [macro()].
