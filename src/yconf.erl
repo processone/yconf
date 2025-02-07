@@ -934,7 +934,11 @@ replace_macro(V, {Name, Val}, Macros, Path) ->
 		false -> replace_macros(Val, Macros, [Name|Path])
 	    end;
 	_ ->
-	    V
+	    case is_binary(V) andalso is_binary(Val) of
+	        true -> re:replace(V, <<"@", Name/binary, "@">>, Val,
+                                   [{return, binary}, global]);
+	        false -> V
+	    end
     end;
 replace_macro(Val, _, _, _) ->
     Val.
