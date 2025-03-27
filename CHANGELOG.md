@@ -1,3 +1,7 @@
+# Version 1.0.18
+
+* Add support for macros substitution inside strings
+
 # Version 1.0.17
 
 * Add `additional_macros` option
