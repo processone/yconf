@@ -975,7 +975,9 @@ read_include_files(Includes, Opts, Paths) ->
 %%%===================================================================
 -spec to_binary(term()) -> binary().
 to_binary(A) when is_atom(A) ->
-    atom_to_binary(A, latin1);
+    try erlang:atom_to_binary(A, latin1)
+    catch _:badarg -> erlang:atom_to_binary(A, utf8)
+    end;
 to_binary(B) when is_binary(B) ->
     B;
 to_binary(Bad) ->
