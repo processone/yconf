@@ -865,7 +865,7 @@ read_yaml(Path, Opts, Paths) ->
 partition_macros(Opts) ->
     lists:foldr(
       fun({define_macro, M}, {Ms, Os}) ->
-	      {M ++ Ms, Os};
+	      {M ++ Ms, [O|Os]};
 	 (O, {Ms, Os}) ->
 	      {Ms, [O|Os]}
       end, {[], []}, Opts).
