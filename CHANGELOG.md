@@ -1,5 +1,6 @@
 # Version 1.0.19
 
+* Updating fast_yaml to version 1.0.39.
 * Accept non-latin1 atoms
 
 # Version 1.0.18
