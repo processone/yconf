@@ -1,3 +1,7 @@
+# Version 1.0.19
+
+* Accept non-latin1 atoms
+
 # Version 1.0.18
 
 * Add support for macros substitution inside strings
