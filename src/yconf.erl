@@ -42,6 +42,8 @@
 -export([map/2, map/3]).
 -export([either/2, and_then/2, non_empty/1]).
 -export([options/1, options/2]).
+%% Auxiliary
+-export([parse_uri/1, parse_uri/2]).
 
 -define(is_validator(Term), is_function(Term, 1)).
 -ifndef(deprecated_stacktrace).
@@ -362,18 +364,19 @@ url(Schemes) ->
     fun(Val) ->
 	    URL = to_binary(Val),
 	    case parse_uri(URL) of
-		{ok, _, Host, _} when Host == ""; Host == <<"">> ->
+		{ok, _, _, Host, _, _, _} when Host == ""; Host == <<"">> ->
 		    fail({bad_url, empty_host, URL});
-		{ok, _, _, Port} when Port /= undefined,
+		{ok, _, _, _, Port, _, _} when Port /= undefined,
 				      Port =< 0 orelse Port >= 65536 ->
 		    fail({bad_url, bad_port, URL});
-		{ok, Scheme, _, _} when Schemes /= [] ->
+		{ok, SchemeString, _, _, _, _, _} when Schemes /= [] ->
+		    Scheme = to_atom(SchemeString),
 		    case lists:member(Scheme, Schemes) of
 			true -> URL;
 			false ->
 			    fail({bad_url, {unsupported_scheme, Scheme}, URL})
 		    end;
-		{ok, _, _, _} ->
+		{ok, _, _, _, _, _, _} ->
 		    URL;
 		{error, Why} ->
 		    fail({bad_url, Why, URL})
@@ -1163,32 +1166,43 @@ parse_ip_netmask(S) ->
 	    error
     end.
 
--spec parse_uri(term()) -> {ok, atom(), binary(), integer() | undefined} |
-			   {error, term()}.
 -ifdef(USE_OLD_HTTP_URI).
-parse_uri(URL) when is_binary(URL) ->
-    parse_uri(to_string(URL)); % OTP =< 19's http_uri:parse/1 expects strings.
 parse_uri(URL) ->
-    case http_uri:parse(URL) of
-	{ok, {Scheme, _UserInfo, Host, Port0, _Path, _Query}} ->
+    parse_uri(URL, []).
+
+parse_uri(URL, Protocols) ->
+    case http_uri:parse(URL, [{scheme_defaults, Protocols}]) of
+	{ok, {Scheme, UserInfo, Host, Port0, Path, Query}} ->
 	    Port = if is_integer(Port0) -> Port0;
 		      true -> undefined
 		   end,
-	    {ok, Scheme, Host, Port};
-	{error, Reason} ->
-	    {error, Reason}
+	    {ok, atom_to_list(Scheme), UserInfo, Host, Port, Path, Query};
+	{error, _} = E ->
+	    E
     end.
+
 -else.
-parse_uri(URL0) ->
+parse_uri(URL) ->
+    parse_uri(URL, [{http, 80}, {https, 443}]).
+
+parse_uri(URL, Protocols) when is_binary(URL) ->
+    parse_uri(binary_to_list(URL), Protocols);
+parse_uri(URL0, Protocols) ->
     URL = re:replace(URL0, <<"@[A-Z]+@">>, <<"MACRO">>, [{return, binary}]),
     case uri_string:parse(URL) of
-	URIMap when is_map(URIMap) ->
-	    Scheme = maps:get(scheme, URIMap, <<>>),
-	    Host = maps:get(host, URIMap, <<>>),
-	    Port = maps:get(port, URIMap, undefined),
-	    {ok, to_atom(Scheme), Host, Port};
-	{error, Reason, _Info} ->
-	    {error, Reason}
+	#{scheme := Scheme, host := Host, port := Port, path := Path} = M1 ->
+	    {ok, Scheme, maps:get(userinfo, M1, ""), Host, Port, Path, maps:get(query, M1, "")};
+	#{scheme := Scheme, host := Host, path := Path} = M2 ->
+	    case lists:keyfind(to_atom(Scheme), 1, Protocols) of
+		{_, Port} ->
+		    {ok, Scheme, maps:get(userinfo, M2, ""), Host, Port, Path, maps:get(query, M2, "")};
+		_ ->
+		    {error, unknown_protocol}
+	    end;
+	#{path := Path} ->
+	    {ok, <<>>, "", "", undefined, Path, ""};
+	{error, Atom, _} ->
+	    {error, Atom}
     end.
 -endif.
 
