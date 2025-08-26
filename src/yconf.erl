@@ -991,6 +991,10 @@ to_atom(B) when is_binary(B) ->
     try binary_to_atom(B, latin1)
     catch _:system_limit -> fail({bad_length, 255})
     end;
+to_atom(L) when is_list(L) ->
+    try list_to_atom(L)
+    catch _:system_limit -> fail({bad_length, 255})
+    end;
 to_atom(A) when is_atom(A) ->
     A;
 to_atom(Bad) ->
@@ -1188,7 +1192,7 @@ parse_uri(URL) ->
 parse_uri(URL, Protocols) when is_binary(URL) ->
     parse_uri(binary_to_list(URL), Protocols);
 parse_uri(URL0, Protocols) ->
-    URL = re:replace(URL0, <<"@[A-Z]+@">>, <<"MACRO">>, [{return, binary}]),
+    URL = re:replace(URL0, <<"@[A-Z]+@">>, <<"MACRO">>, [{return, list}]),
     case uri_string:parse(URL) of
 	#{scheme := Scheme, host := Host, port := Port, path := Path} = M1 ->
 	    {ok, Scheme, maps:get(userinfo, M1, ""), Host, Port, Path, maps:get(query, M1, "")};
