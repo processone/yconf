@@ -991,7 +991,7 @@ to_atom(B) when is_binary(B) ->
     try binary_to_atom(B, latin1)
     catch _:system_limit -> fail({bad_length, 255})
     end;
-to_atom(L) when is_list(L) ->
+to_atom([_|Rest] = L) when is_list(Rest) ->
     try list_to_atom(L)
     catch _:system_limit -> fail({bad_length, 255})
     end;
