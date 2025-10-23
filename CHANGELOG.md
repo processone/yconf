@@ -1,3 +1,7 @@
+# Version 1.0.22
+
+* Fix issue with parse_uri
+
 # Version 1.0.21
 
 * Improve parse_uri functions
