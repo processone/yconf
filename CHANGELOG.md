@@ -1,3 +1,7 @@
+# Version 1.0.23
+
+* Updating fast_yaml to version 1.0.40.
+
 # Version 1.0.22
 
 * Fix issue with parse_uri
